@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>BrainAware</title>
+  <link rel="icon" type="images/x-icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTK62KLOsi4qQ7icQ02vwakmSBEgnTwsT-DzQ&usqp=CAU" />
+</head>
+
+<body>
+  <div id="root"></div>
+</body>
+<script>
+  {
+    var WS = window.WebSocket;
+    function DevWebSocket(s){
+      if(s === "ws://localhost:3000/ws"){
+      return {}
+    }
+    else{
+      return new WS(s)
+    }
+  }
+  window.WebSocket = DevWebSocket
+}
+</script>
+</html>
