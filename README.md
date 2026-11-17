@@ -5,6 +5,7 @@
 </p>
 
 <p align="center">
+  <a href="https://mohamed-halemo.github.io/Early-Alzheimer-s-Detection/"><img src="https://img.shields.io/badge/Live%20demo-open-8957e5?style=flat-square" alt="Live demo"></a>
   <a href="https://doi.org/10.1016/j.heliyon.2024.e29375"><img src="https://img.shields.io/badge/Paper-Heliyon%202024-1f6feb?style=flat-square" alt="Paper"></a>
   <img src="https://img.shields.io/badge/Test%20accuracy-98.17%25-2ea44f?style=flat-square" alt="Accuracy">
   <img src="https://img.shields.io/badge/TensorFlow-FF6F00?style=flat-square&logo=tensorflow&logoColor=white" alt="TensorFlow">
@@ -15,6 +16,10 @@
 <p align="center">
   <img src="docs/figures/brainaware_ui.jpg" width="90%" alt="BrainAware web app">
 </p>
+
+## Live demo
+
+**[mohamed-halemo.github.io/Early-Alzheimer-s-Detection](https://mohamed-halemo.github.io/Early-Alzheimer-s-Detection/)**: browse open-data MRI scans in 2D/3D and see the slices the model uses. Live predictions coming soon.
 
 ## Paper
 
