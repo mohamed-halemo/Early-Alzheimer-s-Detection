@@ -1,0 +1,29 @@
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.ipynb_checkpoints/
+
+# django
+db.sqlite3
+media/
+*.log
+
+# node
+node_modules/
+build/
+
+# data + weights (ADNI data can't be shared, weights are in Releases)
+*.nii
+*.nii.gz
+*.dcm
+*.vti
+*.h5
+uploads/
+
+# os / editors
+.DS_Store
+.vscode/
+.idea/
