@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BrainAware · Early Alzheimer's Detection</title>
+<meta name="description" content="Static demo of BrainAware: a hippocampus-focused VGG16 that classifies T1 brain MRI into CN, MCI and AD. Heliyon 2024.">
+<link rel="icon" href="img/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="#">
+      <img src="img/icon.svg" alt="" width="34" height="34">
+      <span class="brand-name">BrainAware</span>
+      <span class="brand-sub">Early Alzheimer's Detection</span>
+    </a>
+    <nav class="links">
+      <a href="#how">How it works</a>
+      <a href="#results">Results</a>
+      <a href="#team">Team</a>
+      <a class="pill" href="https://doi.org/10.1016/j.heliyon.2024.e29375">Paper · Heliyon 2024</a>
+      <a class="pill ghost" href="https://github.com/mohamed-halemo/Early-Alzheimer-s-Detection">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="wrap intro">
+    <h1>Hippocampus-focused VGG16 for CN / MCI / AD classification from T1 MRI</h1>
+    <p>BrainAware takes a T1-weighted brain MRI, extracts the axial slices that contain the hippocampus, runs each slice through a fine-tuned VGG16 and averages the class probabilities. This page shows the viewer and the preprocessing on a few open-data scans.</p>
+    <div class="notice" role="note">
+      <strong>Demo.</strong> Preprocessing approximated without FSL; open-data scans (healthy subjects), not ADNI. Research only, not for clinical use.
+    </div>
+  </section>
+
+  <section class="wrap app" id="demo" aria-label="Demo viewer">
+    <div class="app-frame">
+      <div class="app-side">
+        <label class="field">
+          <span>Case</span>
+          <select id="case-select"></select>
+        </label>
+        <dl class="case-meta" id="case-meta"></dl>
+
+        <div class="panel">
+          <h3>Prediction</h3>
+          <p class="soon">Live predictions coming soon.</p>
+        </div>
+      </div>
+
+      <div class="app-main">
+        <div class="views">
+          <figure class="view" data-plane="axial">
+            <figcaption>Axial <span class="idx"></span></figcaption>
+            <div class="canvas-box"><canvas></canvas></div>
+            <input type="range" aria-label="Axial slice">
+          </figure>
+          <figure class="view" data-plane="coronal">
+            <figcaption>Coronal <span class="idx"></span></figcaption>
+            <div class="canvas-box"><canvas></canvas></div>
+            <input type="range" aria-label="Coronal slice">
+          </figure>
+          <figure class="view" data-plane="sagittal">
+            <figcaption>Sagittal <span class="idx"></span></figcaption>
+            <div class="canvas-box"><canvas></canvas></div>
+            <input type="range" aria-label="Sagittal slice">
+          </figure>
+          <figure class="view view3d">
+            <figcaption>3D <span class="idx">drag to rotate</span></figcaption>
+            <div class="canvas-box" id="three-box"><div class="loading" id="three-msg">Loading mesh…</div></div>
+            <div class="toolbar3d">
+              <label><input type="checkbox" id="t-brain3d" checked> Cortex</label>
+              <label><input type="checkbox" id="t-hippo3d" checked> Hippocampus</label>
+            </div>
+          </figure>
+        </div>
+        <div class="toolbar">
+          <label><input type="checkbox" id="t-hippo" checked> Hippocampus mask</label>
+          <label><input type="checkbox" id="t-strip"> Skull stripped</label>
+          <label><input type="checkbox" id="t-range" checked> Slices used by the model</label>
+          <span class="hint">Click a view to move the other planes. Radiological convention (patient right on image left).</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="app-frame second">
+      <div class="input-col">
+        <h3>Model input</h3>
+        <p class="hint" style="margin:0 0 4px">150×150, as fed to the model (same orientation as training)</p>
+        <canvas id="input-canvas" width="150" height="150" aria-label="Model input slice"></canvas>
+        <input type="range" id="input-range" aria-label="Model input slice">
+        <div id="input-meta" class="input-meta"></div>
+      </div>
+      <div class="slice-col">
+        <h3>What the model sees</h3>
+        <p class="hint">Each axial slice in the hippocampus range is skull stripped, cropped to the brain and resized to 150×150. The model classifies each slice on its own and averages the probabilities. Use the slider or the axial view to step through the slices.</p>
+        <img id="input-sprite" class="sprite" alt="All model input slices for this case" width="1500" height="600">
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap section" id="about-demo">
+    <h2>About this demo</h2>
+    <ul>
+      <li>Scans are open IXI T1 MRI of healthy volunteers, not ADNI.</li>
+      <li>Preprocessing is approximated without FSL: affine registration to MNI152 (SimpleITK), MNI brain mask for skull stripping, Harvard-Oxford atlas for the hippocampus.</li>
+      <li>Static page: no uploads, no server, no tracking. The full app needs the Django backend.</li>
+      <li>Research only, not for clinical use.</li>
+    </ul>
+  </section>
+
+  <section class="wrap section" id="how">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li><b>Data.</b> ADNI T1-weighted MRI, 1,598 subjects (339 AD, 452 CN, 807 MCI).</li>
+      <li><b>Preprocessing.</b> Register to MNI152, segment the hippocampus, skull strip, remove background, keep the slices that contain the hippocampus, crop to the brain, resize to 150×150.</li>
+      <li><b>Model.</b> VGG16 pretrained on ImageNet. First 3 conv layers frozen, the rest fine-tuned, new head with Dense 1024 → 512 → 3 (softmax).</li>
+      <li><b>Training.</b> Adam, exponential LR decay (0.96), class weights for the imbalance, progressive augmentation (strength increased in steps during training).</li>
+      <li><b>Inference.</b> Predict each slice, average the probabilities over slices, report CN / MCI / AD percentages.</li>
+    </ol>
+    <figure class="fig">
+      <img src="img/architecture.jpg" alt="Modified VGG16 architecture: input 150x150x3, VGG16 conv blocks, new classifier with 1024, 512 and 3 units" loading="lazy" width="1400" height="567">
+      <figcaption>Modified VGG16. Figure from the paper.</figcaption>
+    </figure>
+    <figure class="fig">
+      <img src="img/brainaware_ui.jpg" alt="The BrainAware web app: prediction donut chart, patient progression chart, three MRI planes and a 3D brain" loading="lazy" width="1400" height="749">
+      <figcaption>The full app (React + Cornerstone + vtk.js, Django backend), with patient history across visits. Figure from the paper.</figcaption>
+    </figure>
+  </section>
+
+  <section class="wrap section" id="results">
+    <h2>Paper results (ADNI)</h2>
+    <div class="cols">
+      <table>
+        <thead><tr><th>Split</th><th>Accuracy</th><th>Loss</th></tr></thead>
+        <tbody>
+          <tr><td>Train</td><td>99.62%</td><td>0.019</td></tr>
+          <tr><td>Validation</td><td>97.52%</td><td>0.086</td></tr>
+          <tr class="hl"><td>Test (10-fold CV)</td><td>98.17%</td><td>0.077</td></tr>
+        </tbody>
+      </table>
+      <table>
+        <thead><tr><th>Class</th><th>Precision</th><th>Recall</th><th>F1</th></tr></thead>
+        <tbody>
+          <tr><td>AD</td><td>0.99</td><td>0.96</td><td>0.98</td></tr>
+          <tr><td>CN</td><td>0.98</td><td>0.99</td><td>0.99</td></tr>
+          <tr><td>MCI</td><td>0.97</td><td>0.99</td><td>0.98</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">These numbers are slice-level results on ADNI. Reported in the paper on the ADNI test set; they are not results on the scans shown on this page. External validation is still open work.</p>
+  </section>
+
+  <section class="wrap section" id="team">
+    <h2>Team</h2>
+    <p>Built by Mohamed Hafez, Noha Tarek, Caroline Magdy, Mohammed Kamel and Alaa Melek. Supervised by Ibrahim Sadek. Co-authors: Lamees N. Mahmoud and Shafiq Ul Rehman.</p>
+    <p class="note">Mohammed Abdelhalim on the paper is Mohamed Hafez.</p>
+  </section>
+
+  <section class="wrap section" id="cite">
+    <h2>Citation</h2>
+    <p>Rehman S.U., Tarek N., Magdy C., Kamel M., Abdelhalim M., Melek A., Mahmoud L.N., Sadek I. <i>AI-based tool for early detection of Alzheimer's disease.</i> Heliyon 10(8), e29375, 2024. <a href="https://doi.org/10.1016/j.heliyon.2024.e29375">doi:10.1016/j.heliyon.2024.e29375</a></p>
+    <div class="bib">
+      <button type="button" id="copy-bib">Copy BibTeX</button>
+<pre id="bibtex">@article{rehman2024alzheimer,
+  title   = {AI-based tool for early detection of Alzheimer's disease},
+  author  = {Rehman, Shafiq Ul and Tarek, Noha and Magdy, Caroline and Kamel, Mohammed and
+             Abdelhalim, Mohammed and Melek, Alaa and Mahmoud, Lamees N. and Sadek, Ibrahim},
+  journal = {Heliyon},
+  volume  = {10},
+  number  = {8},
+  pages   = {e29375},
+  year    = {2024},
+  doi     = {10.1016/j.heliyon.2024.e29375}
+}</pre>
+    </div>
+  </section>
+
+  <section class="wrap section" id="credits">
+    <h2>Data and credits</h2>
+    <ul>
+      <li>MRI: <a href="https://brain-development.org/ixi-dataset/">IXI dataset</a> (Imperial College London, Guy's, Hammersmith, Institute of Psychiatry), licensed <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>. The volumes and meshes on this page are derived from IXI T1 scans (bias corrected, registered, resampled) and are shared under the same license.</li>
+      <li>Template: MNI ICBM152 2009a nonlinear symmetric (McConnell Brain Imaging Centre). Hippocampus mask: Harvard-Oxford subcortical atlas (via nilearn).</li>
+      <li>3D rendering: <a href="https://threejs.org/">three.js</a> (MIT).</li>
+      <li>No ADNI data is published here. The model was trained on ADNI; access to ADNI is through <a href="https://adni.loni.usc.edu/">adni.loni.usc.edu</a>.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p>Research project. Not a medical device and not for clinical use.</p>
+    <p><a href="https://github.com/mohamed-halemo/Early-Alzheimer-s-Detection">Source on GitHub</a> · Demo scripts in <a href="https://github.com/mohamed-halemo/Early-Alzheimer-s-Detection/tree/gh-pages/site-src"><code>site-src/</code></a> on the <code>gh-pages</code> branch</p>
+  </div>
+</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
