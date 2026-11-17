@@ -120,5 +120,3 @@ Co-authors: Lamees N. Mahmoud and Shafiq Ul Rehman.
 ```
 
 *Note: Mohammed Abdelhalim on the paper is me, Mohamed Hafez. I used my second name there, not my last name.*
-
-Figures are from the paper (CC BY-NC 4.0).
