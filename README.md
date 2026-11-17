@@ -99,8 +99,9 @@ The model is trained on [ADNI](https://adni.loni.usc.edu/). The data isn't inclu
 
 ## Team
 
-Built by Mohammed Abdelhalim, Noha Tarek, Caroline Magdy, Mohammed Kamel and Alaa Melek.
-Co-authors on the paper: Ibrahim Sadek, Lamees N. Mahmoud and Shafiq Ul Rehman.
+Built by Mohamed Hafez, Noha Tarek, Caroline Magdy, Mohammed Kamel and Alaa Melek.
+Supervised by Ibrahim Sadek.
+Co-authors: Lamees N. Mahmoud and Shafiq Ul Rehman.
 
 ## Citation
 
